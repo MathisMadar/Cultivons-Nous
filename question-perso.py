@@ -4,8 +4,13 @@
 Usage :
   python3 question-perso.py 2026-12-25 questions/noel.json          # verifie puis ecrit
   python3 question-perso.py 2026-12-25 questions/noel.json --test   # verifie seulement
+  python3 question-perso.py 2026-12-25 questions/noel.json --fixe   # garde l'ordre du JSON
+
+Par defaut les propositions sont melangees et 'ok' est recalcule, pour que la
+bonne reponse ne tombe pas toujours sur la meme lettre. Le melange est derive
+de l'identifiant de la question, donc --test montre l'ordre qui sera ecrit.
 """
-import json, re, subprocess, sys, datetime, zoneinfo
+import json, random, re, subprocess, sys, datetime, zoneinfo
 
 SECRET = "Cultivons-26-2dkwq0"
 TZ = zoneinfo.ZoneInfo("America/Toronto")
@@ -32,6 +37,15 @@ if len(set(q["c"])) != len(q["c"]): die("propositions en double")
 q.setdefault("cat", ""); q.setdefault("dif", ""); q.setdefault("id", f"perso-{date}")
 if q["cat"] and q["cat"] not in CATS:
     print(f"⚠ categorie inconnue '{q['cat']}' -> affichera « Culture générale »")
+
+if "--fixe" in sys.argv:
+    print("· ordre du JSON conserve (--fixe)")
+else:
+    bonne = q["c"][q["ok"]]
+    melange = list(q["c"])
+    random.Random(q["id"]).shuffle(melange)
+    q["c"], q["ok"] = melange, melange.index(bonne)
+    print("· propositions melangees (reproductible, derive de l'id)")
 
 aujourdhui = datetime.datetime.now(TZ).date()
 if d < aujourdhui: die(f"date passee ({date}), l'emplacement est fige")
