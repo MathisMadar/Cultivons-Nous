@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B2454">
+<title>Cultivons-nous</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root {
+    --bg: #1B2454;
+    --card: #243068;
+    --text: #FFFFFF;
+    --text-soft: #A9B1D6;
+    --line: #34418A;
+    --yellow: #FFC93C;
+    --coral: #FF6F61;
+    --teal: #26C6BE;
+    --violet: #8E6CEF;
+    --good: #3DDC84;
+    --bad: #FF5A5A;
+    --a-color: var(--coral);
+    --b-color: var(--teal);
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* Empêche le zoom au double appui */
+  body, button { touch-action: manipulation; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 18px calc(40px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app { width: 100%; max-width: 420px; }
+
+  header { text-align: center; margin-bottom: 24px; }
+
+  header h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+
+  header .date {
+    font-size: 13px;
+    color: var(--text-soft);
+    text-transform: capitalize;
+  }
+
+  nav.tabs {
+    display: flex;
+    gap: 6px;
+    background: var(--line);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+
+  nav.tabs button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px 0;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-soft);
+    cursor: pointer;
+  }
+
+  nav.tabs button.active {
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 22px 18px;
+  }
+
+  /* ---------- Question ---------- */
+
+  .meta { display: flex; gap: 6px; margin-bottom: 12px; }
+
+  .chip {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--line);
+    color: var(--text-soft);
+  }
+
+  .question {
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 600;
+    margin: 0 0 20px;
+  }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    border: 3px solid transparent;
+    background: var(--tile);
+    color: var(--bg);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s, background 0.3s;
+  }
+
+  .choice:disabled { cursor: default; }
+
+  .choice .letter {
+    flex: 0 0 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(27, 36, 84, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .choice .txt { flex: 1; line-height: 1.3; }
+
+  .choice .who {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .choice.selected { border-color: var(--text); transform: scale(1.02); }
+  .choice.dim { opacity: 0.35; }
+  .choice.good { background: var(--good); }
+  .choice.bad { background: var(--bad); }
+
+  .choice:focus-visible, button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+
+  button.primary {
+    width: 100%;
+    margin-top: 18px;
+    border: none;
+    background: var(--yellow);
+    color: var(--bg);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 13px 0;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  button.primary:disabled { opacity: 0.35; cursor: default; }
+
+  .waiting {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 14px;
+    margin: 18px 0 0;
+  }
+
+  .result {
+    margin-top: 18px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--line);
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* Animation de validation */
+  .confirm-zone {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 28px 0 12px;
+  }
+
+  .confirm-zone.visible { display: flex; }
+
+  .check-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pop 0.35s ease-out;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .check-circle svg { width: 34px; height: 34px; }
+
+  .check-circle path {
+    fill: none;
+    stroke: var(--bg);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+    animation: draw 0.4s 0.25s ease-out forwards;
+  }
+
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .confirm-text {
+    font-size: 14px;
+    color: var(--text-soft);
+    animation: fade-up 0.3s 0.4s both;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .check-circle, .confirm-text { animation: none; }
+    .check-circle path { animation: none; stroke-dashoffset: 0; }
+    .choice { transition: none; }
+  }
+
+  /* ---------- Scores ---------- */
+
+  .scoreboard { display: flex; gap: 10px; }
+
+  .score-col {
+    flex: 1;
+    text-align: center;
+    padding: 16px 8px;
+    border-radius: 14px;
+    background: var(--bg);
+  }
+
+  .score-name { display: block; font-size: 14px; font-weight: 700; }
+  .score-col.a .score-name { color: var(--a-color); }
+  .score-col.b .score-name { color: var(--b-color); }
+
+  .score-big {
+    display: block;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 4px 0;
+  }
+
+  .score-sub { display: block; font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+
+  .leader {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-soft);
+    margin: 14px 0 0;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 24px 0 10px;
+  }
+
+  .recent { display: flex; flex-direction: column; gap: 8px; }
+
+  .recent-item {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .recent-item .d { color: var(--text-soft); font-size: 12px; text-transform: capitalize; }
+  .recent-item .q { margin: 2px 0; }
+  .recent-item .ans { color: var(--good); font-weight: 600; }
+  .recent-item .marks { margin-top: 4px; color: var(--text-soft); white-space: pre; }
+
+  .empty { color: var(--text-soft); font-size: 13px; text-align: center; margin: 10px 0 0; }
+
+  /* ---------- Divers ---------- */
+
+  .notif-row { margin-top: 18px; text-align: center; font-size: 12px; color: var(--text-soft); }
+
+  .notif-btn {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 12px;
+    font-family: inherit;
+    padding: 7px 14px;
+    border-radius: 16px;
+    cursor: pointer;
+  }
+
+  .notif-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .error-msg {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #FFE0DA;
+    color: #8C2F1D;
+    font-size: 13px;
+    line-height: 1.4;
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  footer {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-soft);
+  }
+
+  footer p { margin: 0; }
+
+  .setup-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px;
+    text-align: center;
+    z-index: 10;
+  }
+
+  .setup-overlay h1 { margin: 0; font-size: 22px; }
+
+  .setup-overlay p {
+    color: var(--text-soft);
+    font-size: 14px;
+    max-width: 280px;
+    margin: 0;
+  }
+
+  .setup-choices { display: flex; gap: 12px; }
+
+  .setup-choices button {
+    border: none;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--bg);
+    cursor: pointer;
+  }
+
+  .setup-choices button[data-user="A"] { background: var(--a-color); }
+  .setup-choices button[data-user="B"] { background: var(--b-color); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="setup" class="setup-overlay hidden">
+  <h1>Cultivons-nous</h1>
+  <p>Avant de commencer, indique qui tu es. Ce choix reste sur cet appareil.</p>
+  <div class="setup-choices">
+    <button data-user="A">Clara</button>
+    <button data-user="B">Mathis</button>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <h1>Cultivons-nous</h1>
+    <div class="date" id="today-date"></div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tab-today" class="active">Aujourd'hui</button>
+    <button id="tab-scores">Scores</button>
+  </nav>
+
+  <section id="view-today" class="card">
+    <div class="meta hidden" id="meta">
+      <span class="chip" id="q-cat"></span>
+      <span class="chip" id="q-dif"></span>
+    </div>
+    <p class="question" id="question-text">Chargement de la question…</p>
+
+    <div class="choices hidden" id="choices"></div>
+    <button class="primary hidden" id="submit-btn" disabled>Valider</button>
+
+    <div id="confirm-zone" class="confirm-zone">
+      <div class="check-circle">
+        <svg viewBox="0 0 24 24"><path d="M4 12.5 L9.5 18 L20 6.5"/></svg>
+      </div>
+      <span class="confirm-text">Réponse envoyée</span>
+    </div>
+
+    <p class="waiting hidden" id="waiting-zone">Réponse enregistrée. En attente de l'autre personne.</p>
+    <div class="result hidden" id="result"></div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="notif-row" id="notif-row">
+      <button class="notif-btn" id="notif-btn">Activer les notifications</button>
+    </div>
+  </section>
+
+  <section id="view-scores" class="card hidden">
+    <div class="scoreboard">
+      <div class="score-col a">
+        <span class="score-name" id="name-a"></span>
+        <span class="score-big" id="score-a">0</span>
+        <span class="score-sub" id="sub-a"></span>
+      </div>
+      <div class="score-col b">
+        <span class="score-name" id="name-b"></span>
+        <span class="score-big" id="score-b">0</span>
+        <span class="score-sub" id="sub-b"></span>
+      </div>
+    </div>
+    <p class="leader" id="leader"></p>
+
+    <h2 class="section-title">Derniers jours</h2>
+    <div class="recent" id="recent"></div>
+    <p class="empty hidden" id="scores-empty">Aucune question terminée pour l'instant.</p>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Mathis Madar. All rights reserved.</p>
+  </footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script>
+/* ---------- Configuration ---------- */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAF8oiZVvIdA06OStlbpn9Zx-EyFCNbxGE",
+  authDomain: "cultivons-nous.firebaseapp.com",
+  databaseURL: "https://cultivons-nous-default-rtdb.firebaseio.com",
+  projectId: "cultivons-nous",
+  storageBucket: "cultivons-nous.firebasestorage.app",
+  messagingSenderId: "838321369866",
+  appId: "1:838321369866:web:d37b09351ad63da92880f3"
+};
+
+// Doit être identique dans functions/index.js et dans les règles
+const SECRET_PATH = "Cultivons-26-2dkwq0";
+
+const VAPID_KEY = "BJmxXGwH7tn8oukS0aUrKwbaLmn2UVf4OKZ6QrmsLAuhdykmmf6a0tWD0hveMEYjW_qXowxE8d9daj9Mbe7sONw";
+
+// Noms affichés pour chaque rôle
+const NAMES = { A: "Clara", B: "Mathis" };
+
+// Fuseau de référence : le jour change à minuit heure de Toronto,
+// quel que soit l'endroit où se trouve le téléphone
+const TZ = "America/Toronto";
+
+const API_URL = "https://quizzapi.fr/api/v2/quiz";
+
+const CATEGORIES = {
+  musique: "Musique",
+  culture_generale: "Culture générale",
+  art_litterature: "Arts et littérature",
+  tv_cinema: "TV et cinéma",
+  actu_politique: "Actualités et politique",
+  sport: "Sport",
+  jeux_videos: "Jeux vidéo",
+  histoire: "Histoire",
+  geographie: "Géographie",
+  science: "Science",
+  gastronomie: "Gastronomie"
+};
+
+const TILE_COLORS = ["var(--yellow)", "var(--coral)", "var(--teal)", "var(--violet)"];
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ---------- Dates ---------- */
+
+// Format AAAA-MM-JJ dans le fuseau de Toronto
+function dateKey(date) {
+  return date.toLocaleDateString("en-CA", { timeZone: TZ });
+}
+
+function dateFromKey(k) {
+  const [y, m, d] = k.split("-").map(Number);
+  // Midi UTC : tombe sur le bon jour quel que soit le fuseau d'affichage
+  return new Date(Date.UTC(y, m - 1, d, 12));
+}
+
+function showError(msg) {
+  const el = document.getElementById("error-msg");
+  el.textContent = msg;
+  el.classList.add("visible");
+}
+
+/* ---------- Identité (A ou B), stockée sur l'appareil ---------- */
+
+// Clé propre à cette app : les deux apps partagent le même domaine
+let ME = localStorage.getItem("cultivons_user");
+const OTHER = () => (ME === "A" ? "B" : "A");
+
+const setupEl = document.getElementById("setup");
+if (!ME) {
+  setupEl.classList.remove("hidden");
+  setupEl.querySelectorAll("button[data-user]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      ME = btn.dataset.user;
+      localStorage.setItem("cultivons_user", ME);
+      setupEl.classList.add("hidden");
+      init();
+    });
+  });
+}
+
+/* ---------- Onglets ---------- */
+
+const tabToday = document.getElementById("tab-today");
+const tabScores = document.getElementById("tab-scores");
+const viewToday = document.getElementById("view-today");
+const viewScores = document.getElementById("view-scores");
+
+function selectTab(activeTab) {
+  [[tabToday, viewToday], [tabScores, viewScores]].forEach(([tab, view]) => {
+    const on = tab === activeTab;
+    tab.classList.toggle("active", on);
+    view.classList.toggle("hidden", !on);
+  });
+}
+
+tabToday.addEventListener("click", () => selectTab(tabToday));
+tabScores.addEventListener("click", () => {
+  selectTab(tabScores);
+  loadScores();
+});
+
+/* ---------- Vue du jour ---------- */
+
+const today = new Date();
+const key = dateKey(today);
+
+document.getElementById("today-date").textContent =
+  today.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: TZ });
+
+const dayRef = db.ref(`${SECRET_PATH}/jours/${key}`);
+
+// Sur iPhone, l'app installée n'est pas rechargée quand on la rouvre :
+// on la recharge dès qu'elle redevient visible un autre jour.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (dateKey(new Date()) !== key) {
+    location.reload();
+    return;
+  }
+  clearNotifications();
+});
+
+// Le service worker ne retire pas de lui-même les notifications affichées
+function clearNotifications() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.getRegistration()
+    .then(reg => reg && reg.getNotifications())
+    .then(list => { if (list) list.forEach(n => n.close()); })
+    .catch(() => {});
+}
+
+window.addEventListener("load", clearNotifications);
+
+const questionEl = document.getElementById("question-text");
+const metaEl = document.getElementById("meta");
+const choicesEl = document.getElementById("choices");
+const submitBtn = document.getElementById("submit-btn");
+const confirmZone = document.getElementById("confirm-zone");
+const waitingZone = document.getElementById("waiting-zone");
+const resultEl = document.getElementById("result");
+
+let selected = null;   // choix en cours, avant validation
+let builtFor = null;   // identifiant de la question affichée
+let lastData = {};
+let lastSignature = null;
+
+// Bloque l'affichage pendant l'animation de validation
+let animating = false;
+
+function playConfirmAnimation() {
+  animating = true;
+  choicesEl.classList.add("hidden");
+  submitBtn.classList.add("hidden");
+
+  // Relance les animations CSS depuis le début
+  const circle = confirmZone.querySelector(".check-circle");
+  circle.replaceWith(circle.cloneNode(true));
+  confirmZone.classList.add("visible");
+
+  setTimeout(() => {
+    confirmZone.classList.remove("visible");
+    animating = false;
+    lastSignature = null;
+    render(lastData);
+  }, 1300);
+}
+
+function buildChoices(q) {
+  choicesEl.innerHTML = "";
+  q.c.forEach((text, i) => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.style.setProperty("--tile", TILE_COLORS[i % TILE_COLORS.length]);
+
+    const letter = document.createElement("span");
+    letter.className = "letter";
+    letter.textContent = "ABCD"[i] || "";
+
+    const txt = document.createElement("span");
+    txt.className = "txt";
+    txt.textContent = text;
+
+    const who = document.createElement("span");
+    who.className = "who";
+
+    btn.append(letter, txt, who);
+    btn.addEventListener("click", () => {
+      selected = i;
+      [...choicesEl.children].forEach((b, j) => b.classList.toggle("selected", j === i));
+      submitBtn.disabled = false;
+    });
+    choicesEl.appendChild(btn);
+  });
+
+  document.getElementById("q-cat").textContent = CATEGORIES[q.cat] || "Culture générale";
+  const dif = document.getElementById("q-dif");
+  dif.textContent = q.dif ? q.dif.charAt(0).toUpperCase() + q.dif.slice(1) : "";
+  dif.classList.toggle("hidden", !q.dif);
+  metaEl.classList.remove("hidden");
+  questionEl.textContent = q.t;
+}
+
+function answered(v) {
+  return v !== undefined && v !== null;
+}
+
+function render(data) {
+  const q = data.question;
+  const mine = data[ME];
+  const theirs = data[OTHER()];
+
+  const signature = JSON.stringify([q && q.id, mine, theirs]);
+  if (signature === lastSignature) return;
+  lastSignature = signature;
+
+  if (!q) {
+    questionEl.textContent = "La question du jour arrive…";
+    metaEl.classList.add("hidden");
+    choicesEl.classList.add("hidden");
+    submitBtn.classList.add("hidden");
+    recupereSecours();
+    return;
+  }
+
+  if (builtFor !== q.id) {
+    buildChoices(q);
+    builtFor = q.id;
+  }
+
+  choicesEl.classList.remove("hidden");
+  const tiles = [...choicesEl.children];
+  tiles.forEach(t => {
+    t.classList.remove("selected", "dim", "good", "bad");
+    t.querySelector(".who").textContent = "";
+  });
+
+  // Pas encore répondu
+  if (!answered(mine)) {
+    tiles.forEach((t, i) => {
+      t.disabled = false;
+      t.classList.toggle("selected", i === selected);
+    });
+    submitBtn.classList.remove("hidden");
+    submitBtn.disabled = selected === null;
+    waitingZone.classList.add("hidden");
+    resultEl.classList.add("hidden");
+    return;
+  }
+
+  tiles.forEach(t => { t.disabled = true; });
+  submitBtn.classList.add("hidden");
+
+  // Répondu, en attente de l'autre : la bonne réponse reste cachée
+  if (!answered(theirs)) {
+    tiles.forEach((t, i) => t.classList.add(i === Number(mine) ? "selected" : "dim"));
+    waitingZone.classList.remove("hidden");
+    resultEl.classList.add("hidden");
+    return;
+  }
+
+  // Les deux ont répondu : on dévoile
+  waitingZone.classList.add("hidden");
+  const a = Number(data.A);
+  const b = Number(data.B);
+
+  tiles.forEach((t, i) => {
+    if (i === q.ok) t.classList.add("good");
+    else if (i === a || i === b) t.classList.add("bad");
+    else t.classList.add("dim");
+
+    const names = ["A", "B"].filter(u => Number(data[u]) === i).map(u => NAMES[u]);
+    t.querySelector(".who").textContent = names.join(" et ");
+  });
+
+  const okA = a === q.ok;
+  const okB = b === q.ok;
+  let msg;
+  if (okA && okB) msg = "Vous avez trouvé tous les deux 🎉";
+  else if (okA) msg = `Point pour ${NAMES.A} 👏`;
+  else if (okB) msg = `Point pour ${NAMES.B} 👏`;
+  else msg = "Personne n'a trouvé cette fois";
+  resultEl.textContent = msg;
+  resultEl.classList.remove("hidden");
+}
+
+/* ---------- Récupération de secours ---------- */
+
+// Normalement la question est posée à minuit par la fonction planifiée.
+// Si elle manque (fonction en échec, premier jour), l'app la récupère
+// elle-même. La transaction garantit qu'une seule question est retenue.
+
+let secoursLance = false;
+
+function melange(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function prepareQuestion(quiz) {
+  const choix = melange([quiz.answer, ...quiz.badAnswers]);
+  return {
+    id: quiz._id,
+    t: quiz.question,
+    c: choix,
+    ok: choix.indexOf(quiz.answer),
+    cat: quiz.category || "",
+    dif: quiz.difficulty || ""
+  };
+}
+
+async function recupereSecours() {
+  if (secoursLance) return;
+  secoursLance = true;
+
+  try {
+    const cats = Object.keys(CATEGORIES);
+    const cat = cats[Math.floor(Math.random() * cats.length)];
+
+    const [res, usedSnap] = await Promise.all([
+      fetch(`${API_URL}?limit=20&category=${cat}`),
+      db.ref(`${SECRET_PATH}/utilisees`).once("value")
+    ]);
+    if (!res.ok) throw new Error("réponse " + res.status);
+
+    const data = await res.json();
+    const used = usedSnap.val() || {};
+    const libres = (data.quizzes || []).filter(z =>
+      z && z._id && z.question && z.answer
+      && Array.isArray(z.badAnswers) && z.badAnswers.length > 0
+      && !used[z._id]);
+    if (!libres.length) throw new Error("aucune question neuve");
+
+    const q = prepareQuestion(libres[Math.floor(Math.random() * libres.length)]);
+
+    // N'écrit que si aucune question n'existe encore pour ce jour
+    const result = await dayRef.child("question").transaction(cur => cur || q);
+    if (result.committed && result.snapshot.val().id === q.id) {
+      await db.ref(`${SECRET_PATH}/utilisees/${q.id}`).set(true);
+    }
+  } catch (err) {
+    console.error("Récupération de secours :", err);
+    questionEl.textContent = "La question du jour n'est pas encore disponible. Reviens un peu plus tard.";
+  }
+}
+
+/* ---------- Notifications ---------- */
+
+function setupNotifications() {
+  const btn = document.getElementById("notif-btn");
+  const row = document.getElementById("notif-row");
+
+  const supported = "Notification" in window
+    && "serviceWorker" in navigator
+    && firebase.messaging.isSupported();
+
+  if (!supported) {
+    row.textContent = "Notifications non disponibles sur cet appareil.";
+    return;
+  }
+
+  // Déjà autorisées : on rafraîchit le jeton en silence
+  if (Notification.permission === "granted") {
+    row.classList.add("hidden");
+    registerToken();
+    return;
+  }
+
+  if (Notification.permission === "denied") {
+    row.textContent = "Notifications refusées. À réactiver dans les réglages du téléphone.";
+    return;
+  }
+
+  // La demande doit partir d'un geste de l'utilisateur
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    Notification.requestPermission().then(result => {
+      if (result === "granted") {
+        row.classList.add("hidden");
+        registerToken();
+      } else {
+        btn.disabled = false;
+        btn.textContent = "Notifications refusées";
+      }
+    });
+  });
+}
+
+function registerToken() {
+  // Le service worker est à la racine du dépôt, donc en chemin relatif
+  navigator.serviceWorker.register("firebase-messaging-sw.js")
+    .then(registration => firebase.messaging().getToken({
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: registration
+    }))
+    .then(token => {
+      if (!token) return;
+      // Un jeton par personne : le dernier appareil enregistré reçoit
+      return db.ref(`${SECRET_PATH}/tokens/${ME}`).set(token);
+    })
+    .catch(err => console.error("Notifications :", err));
+}
+
+/* ---------- Démarrage ---------- */
+
+function init() {
+  setupNotifications();
+
+  submitBtn.addEventListener("click", () => {
+    if (selected === null) return;
+    submitBtn.disabled = true;
+    playConfirmAnimation();
+
+    dayRef.child(ME).set(selected).catch(err => {
+      showError("Échec de l'enregistrement : " + err.message);
+      lastSignature = null;
+      render(lastData);
+    });
+  });
+
+  dayRef.on("value", snap => {
+    lastData = snap.val() || {};
+    if (animating) return;
+    render(lastData);
+  }, err => {
+    showError("Lecture refusée par la base : " + err.message
+      + ". Vérifie que les règles Firebase autorisent le chemin utilisé.");
+  });
+}
+
+if (ME) init();
+
+/* ---------- Scores ---------- */
+
+document.getElementById("name-a").textContent = NAMES.A;
+document.getElementById("name-b").textContent = NAMES.B;
+
+// Un jour compte s'il est passé, ou si les deux ont déjà répondu
+// aujourd'hui : sinon le score trahirait la réponse avant le dévoilement.
+function jourTermine(k, d) {
+  return k !== key || (answered(d.A) && answered(d.B));
+}
+
+function stats(jours, keys, u) {
+  let bonnes = 0, repondues = 0, serie = 0, record = 0;
+  keys.forEach(k => {
+    const d = jours[k];
+    if (!answered(d[u])) { serie = 0; return; }
+    repondues++;
+    if (Number(d[u]) === d.question.ok) {
+      bonnes++;
+      serie++;
+      record = Math.max(record, serie);
+    } else {
+      serie = 0;
+    }
+  });
+  return { bonnes, repondues, serie, record };
+}
+
+function loadScores() {
+  db.ref(`${SECRET_PATH}/jours`).once("value")
+    .then(snap => renderScores(snap.val() || {}))
+    .catch(err => showError("Lecture des scores refusée : " + err.message));
+}
+
+function renderScores(jours) {
+  const keys = Object.keys(jours)
+    .filter(k => jours[k] && jours[k].question && jourTermine(k, jours[k]))
+    .sort();
+
+  const sA = stats(jours, keys, "A");
+  const sB = stats(jours, keys, "B");
+
+  [["a", sA], ["b", sB]].forEach(([id, s]) => {
+    document.getElementById("score-" + id).textContent = s.bonnes;
+    document.getElementById("sub-" + id).innerHTML =
+      `sur ${s.repondues} réponse${s.repondues > 1 ? "s" : ""}<br>`
+      + `Série en cours : ${s.serie}<br>Record : ${s.record}`;
+  });
+
+  const leader = document.getElementById("leader");
+  const ecart = sA.bonnes - sB.bonnes;
+  if (!keys.length) leader.textContent = "";
+  else if (ecart === 0) leader.textContent = "Égalité parfaite";
+  else {
+    const n = Math.abs(ecart);
+    leader.textContent = `${NAMES[ecart > 0 ? "A" : "B"]} mène de ${n} point${n > 1 ? "s" : ""}`;
+  }
+
+  // Dix derniers jours, du plus récent au plus ancien
+  const recent = document.getElementById("recent");
+  recent.innerHTML = "";
+  keys.slice(-10).reverse().forEach(k => {
+    const d = jours[k];
+    const q = d.question;
+
+    const item = document.createElement("div");
+    item.className = "recent-item";
+
+    const date = document.createElement("div");
+    date.className = "d";
+    date.textContent = dateFromKey(k).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+
+    const question = document.createElement("div");
+    question.className = "q";
+    question.textContent = q.t;
+
+    const ans = document.createElement("div");
+    ans.className = "ans";
+    ans.textContent = q.c[q.ok];
+
+    const marks = document.createElement("div");
+    marks.className = "marks";
+    marks.textContent = ["A", "B"].map(u => {
+      if (!answered(d[u])) return `${NAMES[u]} –`;
+      return `${NAMES[u]} ${Number(d[u]) === q.ok ? "✅" : "❌"}`;
+    }).join("   ");
+
+    item.append(date, question, ans, marks);
+    recent.appendChild(item);
+  });
+
+  document.getElementById("scores-empty").classList.toggle("hidden", keys.length > 0);
+}
+</script>
+</body>
+</html>
