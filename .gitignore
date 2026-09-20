@@ -70,3 +70,8 @@ node_modules/
 
 # macOS
 .DS_Store
+
+# Questions personnalisées préparées à l'avance.
+# Le dépôt est public et sert le site : les publier révélerait
+# les questions avant qu'elles ne soient posées.
+questions/
