@@ -3,8 +3,8 @@
   "short_name": "Cultivons-nous",
   "display": "standalone",
   "start_url": ".",
-  "background_color": "#1B2454",
-  "theme_color": "#1B2454",
+  "background_color": "#243070",
+  "theme_color": "#243070",
   "icons": [
     {
       "src": "icon-192.png",
