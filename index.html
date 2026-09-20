@@ -751,9 +751,10 @@ function render(data) {
   const okA = a === q.ok;
   const okB = b === q.ok;
   let msg;
-  if (okA && okB) msg = "Vous avez trouvé tous les deux 🎉";
+  if (okA && okB) msg = "On a tous les deux trouvé 🎉";
   else if (okA) msg = `Point pour ${NAMES.A} 👏`;
   else if (okB) msg = `Point pour ${NAMES.B} 👏`;
+  else if (a === b) msg = "Au moins on se trompe ensemble 🤷‍♂️";
   else msg = "Personne n'a trouvé cette fois";
   resultEl.textContent = msg;
   resultEl.classList.remove("hidden");
