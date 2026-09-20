@@ -33,7 +33,8 @@ if not isinstance(q["c"], list) or not 2 <= len(q["c"]) <= 4:
     die(f"'c' doit contenir 2 a 4 propositions (recu : {len(q.get('c',[]))})")
 if not isinstance(q["ok"], int) or not 0 <= q["ok"] < len(q["c"]):
     die(f"'ok' doit etre un indice valide de 'c' (0..{len(q['c'])-1})")
-if len(set(q["c"])) != len(q["c"]): die("propositions en double")
+if len(set(q["c"])) != len(q["c"]):
+    print("⚠ propositions en double -> toutes les identiques seront comptees justes")
 q.setdefault("cat", ""); q.setdefault("dif", ""); q.setdefault("id", f"perso-{date}")
 if q["cat"] and q["cat"] not in CATS:
     print(f"⚠ categorie inconnue '{q['cat']}' -> affichera « Culture générale »")

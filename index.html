@@ -676,6 +676,13 @@ function buildChoices(q) {
   questionEl.textContent = q.t;
 }
 
+// Compare le texte choisi, pas l'indice : si plusieurs propositions
+// sont identiques, toutes sont justes. Equivalent au test par indice
+// tant que les propositions diffèrent.
+function estJuste(q, v) {
+  return q.c[Number(v)] === q.c[q.ok];
+}
+
 function answered(v) {
   return v !== undefined && v !== null;
 }
@@ -740,7 +747,7 @@ function render(data) {
   const b = Number(data.B);
 
   tiles.forEach((t, i) => {
-    if (i === q.ok) t.classList.add("good");
+    if (q.c[i] === q.c[q.ok]) t.classList.add("good");
     else if (i === a || i === b) t.classList.add("bad");
     else t.classList.add("dim");
 
@@ -748,8 +755,8 @@ function render(data) {
     t.querySelector(".who").textContent = names.join(" et ");
   });
 
-  const okA = a === q.ok;
-  const okB = b === q.ok;
+  const okA = estJuste(q, a);
+  const okB = estJuste(q, b);
   let msg;
   if (okA && okB) msg = "On a tous les deux trouvé 🎉";
   else if (okA) msg = `Point pour ${NAMES.A} 👏`;
@@ -927,7 +934,7 @@ function stats(jours, keys, u) {
     const d = jours[k];
     if (!answered(d[u])) { serie = 0; return; }
     repondues++;
-    if (Number(d[u]) === d.question.ok) {
+    if (estJuste(d.question, d[u])) {
       bonnes++;
       serie++;
       record = Math.max(record, serie);
@@ -994,7 +1001,7 @@ function renderScores(jours) {
     marks.className = "marks";
     marks.textContent = ["A", "B"].map(u => {
       if (!answered(d[u])) return `${NAMES[u]} –`;
-      return `${NAMES[u]} ${Number(d[u]) === q.ok ? "✅" : "❌"}`;
+      return `${NAMES[u]} ${estJuste(q, d[u]) ? "✅" : "❌"}`;
     }).join("   ");
 
     item.append(date, question, ans, marks);
