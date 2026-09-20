@@ -23,6 +23,7 @@
     --bad: #FF5A5A;
     --a-color: var(--coral);
     --b-color: var(--teal);
+    --bar: #1C2659;
     --radius: 18px;
   }
 
@@ -41,7 +42,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: calc(24px + env(safe-area-inset-top, 0px)) 18px calc(40px + env(safe-area-inset-bottom, 0px));
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 18px calc(96px + env(safe-area-inset-bottom, 0px));
   }
 
   .app { width: 100%; max-width: 420px; }
@@ -56,32 +57,38 @@
     text-transform: capitalize;
   }
 
+  /* Barre de navigation fixée en bas de l'écran */
   nav.tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
     display: flex;
-    gap: 6px;
-    background: var(--line);
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 20px;
+    background: var(--bar);
+    border-top: 1px solid var(--line);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
   }
 
   nav.tabs button {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
     border: none;
     background: transparent;
-    padding: 8px 0;
-    border-radius: 9px;
-    font-size: 14px;
+    padding: 4px 0;
+    font-size: 11px;
     font-weight: 500;
     font-family: inherit;
     color: var(--text-soft);
     cursor: pointer;
   }
 
-  nav.tabs button.active {
-    background: var(--card);
-    color: var(--text);
-  }
+  nav.tabs button .ico { font-size: 19px; line-height: 1.1; }
+
+  nav.tabs button.active { color: var(--yellow); font-weight: 700; }
 
   .card {
     background: var(--card);
@@ -404,8 +411,8 @@
   </header>
 
   <nav class="tabs">
-    <button id="tab-today" class="active">Aujourd'hui</button>
-    <button id="tab-scores">Scores</button>
+    <button id="tab-today" class="active"><span class="ico">?</span>Aujourd'hui</button>
+    <button id="tab-scores"><span class="ico">&#9733;</span>Scores</button>
   </nav>
 
   <section id="view-today" class="card">
