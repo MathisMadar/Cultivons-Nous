@@ -83,7 +83,7 @@ function melange(arr) {
 function prepareQuestion(quiz) {
   const choix = melange([quiz.answer, ...quiz.badAnswers]);
   return {
-    id: quiz._id,
+    id: quiz.id,
     t: quiz.question,
     c: choix,
     ok: choix.indexOf(quiz.answer),
@@ -103,9 +103,9 @@ async function tireQuestion(used) {
 
   const data = await res.json();
   const libres = (data.quizzes || []).filter((z) =>
-    z && z._id && z.question && z.answer
+    z && z.id && z.question && z.answer
     && Array.isArray(z.badAnswers) && z.badAnswers.length > 0
-    && !used[z._id]);
+    && !used[z.id]);
 
   if (!libres.length) return null;
   return prepareQuestion(libres[Math.floor(Math.random() * libres.length)]);
