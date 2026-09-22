@@ -925,6 +925,9 @@ document.getElementById("name-b").textContent = NAMES.B;
 // Un jour compte s'il est passé, ou si les deux ont déjà répondu
 // aujourd'hui : sinon le score trahirait la réponse avant le dévoilement.
 function jourTermine(k, d) {
+  // Les clés sont au format AAAA-MM-JJ : l'ordre alphabétique est chronologique.
+  // Une journée à venir ne doit rien dévoiler, surtout pas sa bonne réponse.
+  if (k > key) return false;
   return k !== key || (answered(d.A) && answered(d.B));
 }
 
