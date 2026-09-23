@@ -288,6 +288,14 @@
 
   .score-sub { display: block; font-size: 12px; color: var(--text-soft); line-height: 1.5; }
 
+  /* Dénominateur commun aux deux colonnes */
+  .scope {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-soft);
+    margin: 10px 0 0;
+  }
+
   .leader {
     text-align: center;
     font-size: 14px;
@@ -461,6 +469,7 @@
         <span class="score-sub" id="sub-b"></span>
       </div>
     </div>
+    <p class="scope" id="scope"></p>
     <p class="leader" id="leader"></p>
 
     <h2 class="section-title">Derniers jours</h2>
@@ -971,9 +980,13 @@ function renderScores(jours) {
   [["a", sA], ["b", sB]].forEach(([id, s]) => {
     document.getElementById("score-" + id).textContent = s.bonnes;
     document.getElementById("sub-" + id).innerHTML =
-      `sur ${s.repondues} réponse${s.repondues > 1 ? "s" : ""}<br>`
-      + `Série en cours : ${s.serie}<br>Record : ${s.record}`;
+      `Série en cours : ${s.serie}<br>Record : ${s.record}`;
   });
+
+  const scope = document.getElementById("scope");
+  scope.textContent = keys.length
+    ? `sur ${keys.length} question${keys.length > 1 ? "s" : ""}`
+    : "";
 
   const leader = document.getElementById("leader");
   const ecart = sA.bonnes - sB.bonnes;
