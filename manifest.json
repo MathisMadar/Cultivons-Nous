@@ -1,6 +1,6 @@
 {
-  "name": "Cultivons nous",
-  "short_name": "Cultivons nous",
+  "name": "Cultivons-nous",
+  "short_name": "Cultivons-nous",
   "display": "standalone",
   "start_url": ".",
   "background_color": "#243070",
