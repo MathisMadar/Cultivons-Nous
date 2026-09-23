@@ -25,7 +25,7 @@ const APP_URL = self.registration.scope;
 // ce qui évite le doublon avec l'affichage automatique de Firebase.
 messaging.onBackgroundMessage(payload => {
   const d = payload.data || {};
-  self.registration.showNotification(d.title || "Cultivons-nous", {
+  self.registration.showNotification(d.title || "Culture", {
     body: d.body || "",
     icon: "icon-192.png",
     badge: "icon-192.png",
