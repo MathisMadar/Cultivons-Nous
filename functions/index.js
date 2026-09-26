@@ -28,6 +28,10 @@ const CATEGORIES = {
   gastronomie: "Gastronomie"
 };
 
+// Catégories jamais tirées au sort. Le libellé reste dans CATEGORIES
+// pour afficher correctement une question déjà posée ou personnalisée.
+const EXCLUES = ["jeux_videos"];
+
 const COMMON = {
   maxInstances: 3,
   memory: "256MiB",
@@ -95,7 +99,7 @@ function prepareQuestion(quiz) {
 // Tire une question jamais posée, dans une catégorie au hasard.
 // Pas de filtre de difficulté : les trois niveaux se mélangent.
 async function tireQuestion(used) {
-  const cats = Object.keys(CATEGORIES);
+  const cats = Object.keys(CATEGORIES).filter(c => !EXCLUES.includes(c));
   const cat = cats[Math.floor(Math.random() * cats.length)];
 
   const res = await fetch(`${API_URL}?limit=20&category=${cat}`);

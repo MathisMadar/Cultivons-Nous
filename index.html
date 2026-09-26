@@ -526,6 +526,10 @@ const CATEGORIES = {
   gastronomie: "Gastronomie"
 };
 
+// Catégories jamais tirées au sort. Le libellé reste dans CATEGORIES
+// pour afficher correctement une question déjà posée ou personnalisée.
+const EXCLUES = ["jeux_videos"];
+
 const TILE_COLORS = ["var(--yellow)", "var(--coral)", "var(--teal)", "var(--violet)"];
 
 firebase.initializeApp(firebaseConfig);
@@ -816,7 +820,7 @@ async function recupereSecours() {
   secoursLance = true;
 
   try {
-    const cats = Object.keys(CATEGORIES);
+    const cats = Object.keys(CATEGORIES).filter(c => !EXCLUES.includes(c));
     const cat = cats[Math.floor(Math.random() * cats.length)];
 
     const [res, usedSnap] = await Promise.all([
