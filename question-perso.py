@@ -29,8 +29,8 @@ except ValueError: die(f"date inexistante : {date}")
 q = json.load(open(path, encoding="utf-8"))
 for k in ("t","c","ok"): 
     if k not in q: die(f"champ obligatoire manquant : {k}")
-if not isinstance(q["c"], list) or not 2 <= len(q["c"]) <= 4:
-    die(f"'c' doit contenir 2 a 4 propositions (recu : {len(q.get('c',[]))})")
+if not isinstance(q["c"], list) or not 2 <= len(q["c"]) <= 8:
+    die(f"'c' doit contenir 2 a 8 propositions (recu : {len(q.get('c',[]))})")
 if not isinstance(q["ok"], int) or not 0 <= q["ok"] < len(q["c"]):
     die(f"'ok' doit etre un indice valide de 'c' (0..{len(q['c'])-1})")
 if len(set(q["c"])) != len(q["c"]):
@@ -58,7 +58,7 @@ if occupe and occupe != "null": die(f"une question existe deja pour le {date} �
 
 print(f"✓ valide — {date} ({d.strftime('%A %d %B %Y')}), case libre")
 print(f"  « {q['t']} »")
-for i,c in enumerate(q["c"]): print(f"    {'ABCD'[i]}. {c}" + ("   <-- bonne reponse" if i==q["ok"] else ""))
+for i,c in enumerate(q["c"]): print(f"    {'ABCDEFGH'[i]}. {c}" + ("   <-- bonne reponse" if i==q["ok"] else ""))
 if test: print("\n(--test : rien n'a ete ecrit)"); sys.exit(0)
 
 p = subprocess.run(["firebase","database:set",ref,"-f"],input=json.dumps(q,ensure_ascii=False),
