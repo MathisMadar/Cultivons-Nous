@@ -695,11 +695,17 @@ function buildChoices(q) {
   questionEl.textContent = q.t;
 }
 
+// Indices des bonnes réponses. ok vaut un indice, ou une liste d'indices
+// pour une question à plusieurs bonnes réponses.
+function bonnes(q) {
+  return [].concat(q.ok);
+}
+
 // Compare le texte choisi, pas l'indice : si plusieurs propositions
 // sont identiques, toutes sont justes. Equivalent au test par indice
 // tant que les propositions diffèrent.
 function estJuste(q, v) {
-  return q.c[Number(v)] === q.c[q.ok];
+  return bonnes(q).some(i => q.c[i] === q.c[Number(v)]);
 }
 
 function answered(v) {
@@ -766,7 +772,7 @@ function render(data) {
   const b = Number(data.B);
 
   tiles.forEach((t, i) => {
-    if (q.c[i] === q.c[q.ok]) t.classList.add("good");
+    if (estJuste(q, i)) t.classList.add("good");
     else if (i === a || i === b) t.classList.add("bad");
     else t.classList.add("dim");
 
@@ -1021,7 +1027,10 @@ function renderScores(jours) {
 
     const ans = document.createElement("div");
     ans.className = "ans";
-    ans.textContent = q.c[q.ok];
+    const justes = bonnes(q);
+    ans.textContent = justes.length === q.c.length
+      ? "Toutes les réponses"
+      : justes.map(i => q.c[i]).join(" · ");
 
     const marks = document.createElement("div");
     marks.className = "marks";
