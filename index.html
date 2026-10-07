@@ -787,7 +787,12 @@ function render(data) {
   else if (okA) msg = `Point pour ${NAMES.A} 👏`;
   else if (okB) msg = `Point pour ${NAMES.B} 👏`;
   else if (a === b) msg = "Au moins on se trompe ensemble 🤷‍♂️";
-  else msg = "Personne n'a trouvé cette fois";
+  else {
+    // Change d'un jour à l'autre, identique pour les deux et stable dans la journée
+    const rates = ["Personne n'a trouvé cette fois", "On est vraiment nuls 😤"];
+    const jour = Math.floor(dateFromKey(key).getTime() / 86400000);
+    msg = rates[jour % rates.length];
+  }
   resultEl.textContent = msg;
   resultEl.classList.remove("hidden");
 }
