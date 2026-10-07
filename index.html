@@ -789,7 +789,11 @@ function render(data) {
   else if (a === b) msg = "Au moins on se trompe ensemble 🤷‍♂️";
   else {
     // Change d'un jour à l'autre, identique pour les deux et stable dans la journée
-    const rates = ["Personne n'a trouvé cette fois", "On est vraiment nuls 😤"];
+    const rates = [
+      "Personne n'a trouvé cette fois",
+      "On est vraiment nuls 😤",
+      "On a d'autres qualités t'inquiète pas"
+    ];
     const jour = Math.floor(dateFromKey(key).getTime() / 86400000);
     msg = rates[jour % rates.length];
   }
