@@ -783,20 +783,22 @@ function render(data) {
   const okA = estJuste(q, a);
   const okB = estJuste(q, b);
   let msg;
-  if (okA && okB) msg = "On a tous les deux trouvé 🎉";
+  // Messages en rotation : change d'un jour à l'autre, identique pour les deux
+  const jour = Math.floor(dateFromKey(key).getTime() / 86400000);
+  const auJour = liste => liste[jour % liste.length];
+
+  if (okA && okB) msg = auJour([
+    "On a tous les deux trouvé 🎉",
+    "On est trop fort 😎"
+  ]);
   else if (okA) msg = `Point pour ${NAMES.A} 👏`;
   else if (okB) msg = `Point pour ${NAMES.B} 👏`;
   else if (a === b) msg = "Au moins on se trompe ensemble 🤷‍♂️";
-  else {
-    // Change d'un jour à l'autre, identique pour les deux et stable dans la journée
-    const rates = [
-      "Personne n'a trouvé cette fois",
-      "On est vraiment nuls 😤",
-      "On a d'autres qualités t'inquiète pas"
-    ];
-    const jour = Math.floor(dateFromKey(key).getTime() / 86400000);
-    msg = rates[jour % rates.length];
-  }
+  else msg = auJour([
+    "Personne n'a trouvé cette fois",
+    "On est vraiment nuls 😤",
+    "On a d'autres qualités t'inquiète pas"
+  ]);
   resultEl.textContent = msg;
   resultEl.classList.remove("hidden");
 }
