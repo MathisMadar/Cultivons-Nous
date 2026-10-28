@@ -32,6 +32,10 @@ const CATEGORIES = {
 // pour afficher correctement une question déjà posée ou personnalisée.
 const EXCLUES = ["jeux_videos"];
 
+// Niveaux de difficulté écartés à la réception des questions de l'API.
+// Les questions personnalisées ne sont pas concernées.
+const DIFFICULTES_EXCLUES = ["difficile"];
+
 const COMMON = {
   maxInstances: 3,
   memory: "256MiB",
@@ -109,7 +113,8 @@ async function tireQuestion(used) {
   const libres = (data.quizzes || []).filter((z) =>
     z && z.id && z.question && z.answer
     && Array.isArray(z.badAnswers) && z.badAnswers.length > 0
-    && !used[z.id]);
+    && !used[z.id]
+    && !DIFFICULTES_EXCLUES.includes(z.difficulty));
 
   if (!libres.length) return null;
   return prepareQuestion(libres[Math.floor(Math.random() * libres.length)]);
