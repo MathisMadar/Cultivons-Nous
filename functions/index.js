@@ -32,9 +32,11 @@ const CATEGORIES = {
 // pour afficher correctement une question déjà posée ou personnalisée.
 const EXCLUES = ["jeux_videos"];
 
-// Niveaux de difficulté écartés à la réception des questions de l'API.
+// Niveaux de difficulté écartés à la réception des questions de l'API,
+// sauf pour les catégories de GARDE_DIFFICILE.
 // Les questions personnalisées ne sont pas concernées.
 const DIFFICULTES_EXCLUES = ["difficile"];
+const GARDE_DIFFICILE = ["science"];
 
 const COMMON = {
   maxInstances: 3,
@@ -114,7 +116,8 @@ async function tireQuestion(used) {
     z && z.id && z.question && z.answer
     && Array.isArray(z.badAnswers) && z.badAnswers.length > 0
     && !used[z.id]
-    && !DIFFICULTES_EXCLUES.includes(z.difficulty));
+    && (GARDE_DIFFICILE.includes(z.category)
+        || !DIFFICULTES_EXCLUES.includes(z.difficulty)));
 
   if (!libres.length) return null;
   return prepareQuestion(libres[Math.floor(Math.random() * libres.length)]);
