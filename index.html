@@ -433,6 +433,7 @@
     <div class="meta hidden" id="meta">
       <span class="chip" id="q-cat"></span>
       <span class="chip" id="q-dif"></span>
+      <span class="chip hidden" id="q-multi">Plusieurs réponses possibles</span>
     </div>
     <p class="question" id="question-text">Chargement de la question…</p>
 
@@ -640,7 +641,8 @@ const confirmZone = document.getElementById("confirm-zone");
 const waitingZone = document.getElementById("waiting-zone");
 const resultEl = document.getElementById("result");
 
-let selected = null;   // choix en cours, avant validation
+let selected = [];     // indices choisis, avant validation
+let multiple = false;  // la question du jour accepte plusieurs choix
 let builtFor = null;   // identifiant de la question affichée
 let lastData = {};
 let lastSignature = null;
@@ -668,6 +670,8 @@ function playConfirmAnimation() {
 
 function buildChoices(q) {
   choicesEl.innerHTML = "";
+  selected = [];
+  multiple = q.multi === true;
   q.c.forEach((text, i) => {
     const btn = document.createElement("button");
     btn.className = "choice";
@@ -686,9 +690,12 @@ function buildChoices(q) {
 
     btn.append(letter, txt, who);
     btn.addEventListener("click", () => {
-      selected = i;
-      [...choicesEl.children].forEach((b, j) => b.classList.toggle("selected", j === i));
-      submitBtn.disabled = false;
+      // Choix multiple : un toucher coche ou décoche. Sinon il remplace.
+      if (!multiple) selected = [i];
+      else if (selected.includes(i)) selected = selected.filter(j => j !== i);
+      else selected = [...selected, i];
+      [...choicesEl.children].forEach((b, j) => b.classList.toggle("selected", selected.includes(j)));
+      submitBtn.disabled = selected.length === 0;
     });
     choicesEl.appendChild(btn);
   });
@@ -697,6 +704,7 @@ function buildChoices(q) {
   const dif = document.getElementById("q-dif");
   dif.textContent = q.dif ? q.dif.charAt(0).toUpperCase() + q.dif.slice(1) : "";
   dif.classList.toggle("hidden", !q.dif);
+  document.getElementById("q-multi").classList.toggle("hidden", !multiple);
   metaEl.classList.remove("hidden");
   questionEl.textContent = q.t;
 }
@@ -707,11 +715,18 @@ function bonnes(q) {
   return [].concat(q.ok);
 }
 
+// Indices choisis dans une réponse enregistrée : un nombre pour une
+// question classique, un texte « 0,2 » pour une question à choix multiple.
+function choix(v) {
+  return typeof v === "string" ? v.split(",").map(Number) : [Number(v)];
+}
+
+// Juste dès qu'un des choix est une bonne réponse.
 // Compare le texte choisi, pas l'indice : si plusieurs propositions
 // sont identiques, toutes sont justes. Equivalent au test par indice
 // tant que les propositions diffèrent.
 function estJuste(q, v) {
-  return bonnes(q).some(i => q.c[i] === q.c[Number(v)]);
+  return choix(v).some(j => bonnes(q).some(i => q.c[i] === q.c[j]));
 }
 
 function answered(v) {
@@ -752,10 +767,10 @@ function render(data) {
   if (!answered(mine)) {
     tiles.forEach((t, i) => {
       t.disabled = false;
-      t.classList.toggle("selected", i === selected);
+      t.classList.toggle("selected", selected.includes(i));
     });
     submitBtn.classList.remove("hidden");
-    submitBtn.disabled = selected === null;
+    submitBtn.disabled = selected.length === 0;
     waitingZone.classList.add("hidden");
     resultEl.classList.add("hidden");
     return;
@@ -766,7 +781,8 @@ function render(data) {
 
   // Répondu, en attente de l'autre : la bonne réponse reste cachée
   if (!answered(theirs)) {
-    tiles.forEach((t, i) => t.classList.add(i === Number(mine) ? "selected" : "dim"));
+    const miens = choix(mine);
+    tiles.forEach((t, i) => t.classList.add(miens.includes(i) ? "selected" : "dim"));
     waitingZone.classList.remove("hidden");
     resultEl.classList.add("hidden");
     return;
@@ -774,20 +790,20 @@ function render(data) {
 
   // Les deux ont répondu : on dévoile
   waitingZone.classList.add("hidden");
-  const a = Number(data.A);
-  const b = Number(data.B);
+  const a = choix(data.A);
+  const b = choix(data.B);
 
   tiles.forEach((t, i) => {
     if (estJuste(q, i)) t.classList.add("good");
-    else if (i === a || i === b) t.classList.add("bad");
+    else if (a.includes(i) || b.includes(i)) t.classList.add("bad");
     else t.classList.add("dim");
 
-    const names = ["A", "B"].filter(u => Number(data[u]) === i).map(u => NAMES[u]);
+    const names = ["A", "B"].filter(u => choix(data[u]).includes(i)).map(u => NAMES[u]);
     t.querySelector(".who").textContent = names.join(" et ");
   });
 
-  const okA = estJuste(q, a);
-  const okB = estJuste(q, b);
+  const okA = estJuste(q, data.A);
+  const okB = estJuste(q, data.B);
   let msg;
   // Messages en rotation : change d'un jour à l'autre, identique pour les deux
   const jour = Math.floor(dateFromKey(key).getTime() / 86400000);
@@ -799,7 +815,7 @@ function render(data) {
   ]);
   else if (okA) msg = `Point pour ${NAMES.A} 👏`;
   else if (okB) msg = `Point pour ${NAMES.B} 👏`;
-  else if (a === b) msg = "Au moins on se trompe ensemble 🤷‍♂️";
+  else if (String(a) === String(b)) msg = "Au moins on se trompe ensemble 🤷‍♂️";
   else msg = auJour([
     "Personne n'a trouvé cette fois",
     "On est vraiment nuls 😤",
@@ -938,11 +954,15 @@ function init() {
   setupNotifications();
 
   submitBtn.addEventListener("click", () => {
-    if (selected === null) return;
+    if (selected.length === 0) return;
     submitBtn.disabled = true;
     playConfirmAnimation();
 
-    dayRef.child(ME).set(selected).catch(err => {
+    const reponse = multiple
+      ? [...selected].sort((x, y) => x - y).join(",")
+      : selected[0];
+
+    dayRef.child(ME).set(reponse).catch(err => {
       showError("Échec de l'enregistrement : " + err.message);
       lastSignature = null;
       render(lastData);

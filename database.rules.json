@@ -9,11 +9,11 @@
           },
           "A": {
             ".write": "!data.exists()",
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 7"
+            ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() <= 7) || (newData.isString() && newData.val().length <= 15 && newData.val().matches(/^[0-7](,[0-7])*$/))"
           },
           "B": {
             ".write": "!data.exists()",
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 7"
+            ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() <= 7) || (newData.isString() && newData.val().length <= 15 && newData.val().matches(/^[0-7](,[0-7])*$/))"
           }
         }
       },

@@ -9,6 +9,9 @@ Usage :
 Par defaut les propositions sont melangees et 'ok' est recalcule, pour que la
 bonne reponse ne tombe pas toujours sur la meme lettre. Le melange est derive
 de l'identifiant de la question, donc --test montre l'ordre qui sera ecrit.
+
+Avec "multi": true dans le JSON, on peut cocher plusieurs propositions. La
+reponse compte juste des qu'une des propositions cochees est bonne.
 """
 import json, random, re, subprocess, sys, datetime, zoneinfo
 
@@ -40,6 +43,8 @@ if not oks or not all(isinstance(i, int) and 0 <= i < len(q["c"]) for i in oks):
 if len(set(oks)) != len(oks): die("'ok' contient un indice en double")
 if len(set(q["c"])) != len(q["c"]):
     print("⚠ propositions en double -> toutes les identiques seront comptees justes")
+if "multi" in q and not isinstance(q["multi"], bool):
+    die("'multi' doit valoir true ou false")
 q.setdefault("cat", ""); q.setdefault("dif", ""); q.setdefault("id", f"perso-{date}")
 if q["cat"] and q["cat"] not in CATS:
     print(f"⚠ categorie inconnue '{q['cat']}' -> affichera « Culture générale »")
@@ -63,7 +68,7 @@ occupe = subprocess.run(["firebase","database:get",ref],capture_output=True,text
 if occupe and occupe != "null": die(f"une question existe deja pour le {date} — ecriture impossible")
 
 print(f"✓ valide — {date} ({d.strftime('%A %d %B %Y')}), case libre")
-print(f"  « {q['t']} »")
+print(f"  « {q['t']} »" + ("   (plusieurs reponses possibles)" if q.get("multi") else ""))
 for i,c in enumerate(q["c"]): print(f"    {'ABCDEFGH'[i]}. {c}" + ("   <-- bonne reponse" if i in oks else ""))
 if test: print("\n(--test : rien n'a ete ecrit)"); sys.exit(0)
 
